@@ -25,3 +25,7 @@
 ```
 
 ```
+
+## Applicable CTF Challenges
+
+[Here]()
