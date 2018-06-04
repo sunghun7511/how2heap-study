@@ -133,7 +133,7 @@ Exploiting free on a corrupted chunk to get arbitrary write.
 
 ```
 Welcome to unsafe unlink 2.0!
-unsafe unlink 2.0에 오신 것을 환영합니다!
+unsafe unlink 2.0에 오신 것을 환영한다.
 
 Tested in Ubuntu 14.04/16.04 64bit.
 우분투 14.04 / 16.04 64비트에서 테스트 되었다.
@@ -145,46 +145,44 @@ The most common scenario is a vulnerable buffer that can be overflown and has a 
 제일 일반적인 상황은 버퍼 오버플로우 취약점이 있고, 글로벌 포인터를 가지고 있을 때 이다.
 
 The point of this exercise is to use free to corrupt the global chunk0_ptr to achieve arbitrary memory write.
-
+이 훈련의 요점은 free를 chunk0_ptr 전역변수를 손상시켜 임의의 메모리 쓰기를 달성하는 것이다.
 
 The global chunk0_ptr is at 0x602070, pointing to 0x24f1010
-
+chunk0_ptr 은 0x602070에 있고, 0x24f1010를 가리키고 있다.
 
 The victim chunk we are going to corrupt is at 0x24f10a0
-
+우리가 손상시킬 타겟 청크는 0x24f10a0 이다.
 
 We create a fake chunk inside chunk0.
-
+우리는 chunk0 안에 가짜 청크를 만든다.
 
 We setup the 'next_free_chunk' (fd) of our fake chunk to point near to &chunk0_ptr so that P->fd->bk = P.
-
+우리는 next_free_chunk 가 우리의 가짜 청크인 &chunk0_ptr 근처를 가리키도록 P->fd->bk = P 를 사용한다.
 
 We setup the 'previous_free_chunk' (bk) of our fake chunk to point near to &chunk0_ptr so that P->bk->fd = P.
-
+우리는 previous_free_chunk 가 우리의 가짜 청크인 &chunk0_ptr 근처를 가리키도록 P->bk->fd = P 를 사용한다.
 
 With this setup we can pass this check: (P->fd->bk != P || P->bk->fd != P) == False
-
+우리는 이 설정과 함께면 (P->fd->bk != P || P->bk->fd != P) == False 를 성립하게 할 수 있다.
 
 Fake chunk fd: 0x602058
-
+가짜 청크 fd 는 0x602058 이다.
 
 Fake chunk bk: 0x602060
-
+가짜 청크 bk 는 0x602060 이다.
 
 We need to make sure the 'size' of our fake chunk matches the 'previous_size' of the next chunk (chunk+size)
-
+우리는 우리의 가짜 청크의 `size` 를 다음 청크의 `previous_size` (chunk + size) 와 맞춰줄 필요가 있다.
 
 With this setup we can pass this check: (chunksize(P) != prev_size (next_chunk(P)) == False
-
+이 과정을 통해 (chunksize(P) != prev_size (next_chunk(P)) == False 를 통과할 수 있게 된다.
 
 P = chunk0_ptr, next_chunk(P) == (mchunkptr) (((char *) (p)) + chunksize (p)) == chunk0_ptr + (chunk0_ptr[1]&(~ 0x7))
 
-
 If x = chunk0_ptr[1] & (~ 0x7), that is x = *(chunk0_ptr + x).
 
-
 We just need to set the *(chunk0_ptr + x) = x, so we can pass the check
-
+우리는 *(chunk0_ptr + x) = x 로 맞춰줘야 우리는 검사를 통과할 수 있다.
 
 1.Now the x = chunk0_ptr[1]&(~0x7) = 0, we should set the *(chunk0_ptr + 0) = 0, in other words we should do nothing
 
@@ -229,10 +227,10 @@ chunk0_ptr is now pointing where we want, we use it to overwrite our victim stri
 
 
 Original value: Hello!~
-
+원래 값 : Hello!~
 
 New Value: BBBBAAAA
-
+새로운 값 : BBBBAAAA
 ```
 
 ## Applicable CTF Challenges
