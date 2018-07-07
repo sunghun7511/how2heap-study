@@ -185,22 +185,23 @@ We just need to set the *(chunk0_ptr + x) = x, so we can pass the check
 우리는 *(chunk0_ptr + x) = x 로 맞춰줘야 우리는 검사를 통과할 수 있다.
 
 1.Now the x = chunk0_ptr[1]&(~0x7) = 0, we should set the *(chunk0_ptr + 0) = 0, in other words we should do nothing
-
+1. 이제 x = chunk0_ptr[1]&(~0x7) = 0 이고, 우리는 *(chunk0_ptr + 0) = 0 이도록 설정해줘야 하며, 다시 말하면 아무것도 하지 말아야 한다.
 
 2.Further more we set chunk0_ptr = 0x8 in 64-bits environment, then *(chunk0_ptr + 0x8) == chunk0_ptr[1], it's fine to pass
-
+2. 더 나아가 64비트 환경에서는 chunk0_ptr = 0x8 이라면, *(chunk0_ptr + 0x8) == chunk0_ptr[1] 이기 때문에 통과할 수 있다.
 
 3.Finally we can also set chunk0_ptr[1] = x in 64-bits env, and set *(chunk0_ptr+x)=x,for example chunk_ptr0[1] = 0x20, chunk_ptr0[4] = 0x20
-
+3. 마지막으로 우리는 또한 64비트 환경에서 chunk0_ptr[1] = x, 그리고 *(chunk0_ptr+x)=x 이도록 설정해야 한다.
+예를 들면 chunk_ptr0[1] = 0x20, chunk_ptr0[4] = 0x20 와 같다.
 
 In this case we set the 'size' of our fake chunk so that chunk0_ptr + size (0x24f1018) == chunk0_ptr->size (0x24f1018)
-
+이 상황에서 우리는 우리의 가짜 청크의 'size' 가 chunk0_ptr + size == chunk0_ptr->size 이도록 설정해야 한다.
 
 You can find the commitdiff of this check at https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=17f487b7afa7cd6c316040f3e6c86dc96b2eec30
-
+다음 url 에서 이 검사에 대한 수정 변경사항을 찾을 수 있다. https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=17f487b7afa7cd6c316040f3e6c86dc96b2eec30
 
 We assume that we have an overflow in chunk0 so that we can freely change chunk1 metadata.
-
+우리는 우리가 자유롭게 chunk1 의 정보를 바꿀수 있도록 chunk0 에서 오버플로우를 발생한다고 가정하였다.
 
 We shrink the size of chunk0 (saved as 'previous_size' in chunk1) so that free will think that chunk0 starts where we placed our fake chunk.
 
