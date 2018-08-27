@@ -1,4 +1,4 @@
-# How2Heap Study 02 Fastbin Dup Into Stack
+# How2Heap Study 03 Fastbin Dup Into Stack
 
 ## Tech Overview
 

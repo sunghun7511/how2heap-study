@@ -204,28 +204,28 @@ We assume that we have an overflow in chunk0 so that we can freely change chunk1
 우리는 우리가 자유롭게 chunk1 의 정보를 바꿀수 있도록 chunk0 에서 오버플로우를 발생한다고 가정하였다.
 
 We shrink the size of chunk0 (saved as 'previous_size' in chunk1) so that free will think that chunk0 starts where we placed our fake chunk.
-
+우리는 free 함수가 chunk0 이 우리가 만들어놓은 가짜 청크에서부터 시작한다고 생각하도록 chunk0 의 크기(chunk1 에서는 `previous_size` 에 저장되어 있다.)를 줄일 것이다.
 
 It's important that our fake chunk begins exactly where the known pointer points and that we shrink the chunk accordingly
-
+가짜 청크가 정확히 우리가 알고 있는 포인터의 정확한 위치라는 것은 중요하며, 이에 따라 우리는 청크를 축소해야 합니다.
 
 If we had 'normally' freed chunk0, chunk1.previous_size would have been 0x90, however this is its new value: 0x80
-
+만약 우리가 '평범하게' 해제한 0x90 값을 가진 chunk0, chunk1.previous_size 를 가지고 있더라도, 이제는 0x80 을 가지게 될 것입니다.
 
 We mark our fake chunk as free by setting 'previous_in_use' of chunk1 as False.
-
+chunk1 의 'previous_in_use' 를 free를 통해 False로 설정하도록 우리는 우리의 가짜 청크를 변경해야 한다.
 
 Now we free chunk1 so that consolidate backward will unlink our fake chunk, overwriting chunk0_ptr.
-
+이제 우리는 chunk1 을 해제함으로써 뒤dml 청크를 통합하고, chunk0_ptr을 덮어써 가짜 청크를 unlink 할 것입니다.
 
 You can find the source of the unlink macro at https://sourceware.org/git/?p=glibc.git;a=blob;f=malloc/malloc.c;h=ef04360b918bceca424482c6db03cc5ec90c3e00;hb=07c18a008c2ed8f5660adba2b778671db159a141#l1344
-
+unlink 매크로 소스는 해당 링크에서 찾을 수 있습니다.
 
 At this point we can use chunk0_ptr to overwrite itself to point to an arbitrary location.
-
+이 지점에서, 우리는 chunk0_ptr 을 임의의 위치를 가리키는 포인터가 되도록 덮어쓸 수 있습니다.
 
 chunk0_ptr is now pointing where we want, we use it to overwrite our victim string.
-
+chunk0_ptr는 이제 우리가 원하는 지점을 가리키고 있고, 우리는 이것을 공격 대상 문자열을 덮어쓰는데 사용할 수 있습니다.
 
 Original value: Hello!~
 원래 값 : Hello!~
