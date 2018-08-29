@@ -92,65 +92,68 @@ Now, we overwrite the first 8 bytes of the data at 0xdb1010 to point right befor
 
 Tricking malloc into returning a nearly-arbitrary pointer by abusing the fastbin freelist.
 
-`fastbin` 해제 목록(freelist)을 어뷰징하여 `malloc`이 미리 지정해둔 포인터와 비슷하게 반환하게 하는 트릭이다.
+`fastbin` 해제 목록(freelist)을 어뷰징하여 `malloc`이 미리 지정해둔 포인터와 비슷하게 반환하게 하는 트릭입니다.
 
+(번역은 완벽하지 않으며, 추후 수정될 수 있습니다.)
 
 ## 출력 번역
 
 ```
 This file extends on fastbin_dup.c by tricking malloc into returning a pointer to a controlled location (in this case, the stack).
-fastbin_dup.c 파일은 malloc의 반환값을 조정할 수 있는 트릭을 다룬다. (이 상황에서는 스택)
+fastbin_dup.c 파일은 malloc의 반환값을 조정할 수 있는 트릭을 다룹니다. (이 상황에서는 스택)
 
 The address we want malloc() to return is 0x7fffddf70f88.
-우리가 원하는 malloc의 반환값은 0x7fffddf70f88 이다.
+원하는 malloc의 반환값은 0x7fffddf70f88 입니다.
 
 Allocating 3 buffers.
-3개의 버퍼를 할당한다.
+3개의 버퍼를 할당합니다.
 
 1st malloc(8): 0xdb1010
 2nd malloc(8): 0xdb1030
 3rd malloc(8): 0xdb1050
 
 Freeing the first one...
-첫 번째 버퍼를 해제한다.
+첫 번째 버퍼를 해제합니다.
 
 If we free 0xdb1010 again, things will crash because 0xdb1010 is at the top of the free list.
-만야 0xdb1010 (첫 번째에 할당했던 메모리) 를 한 번 더 해제하면, 해제 목록의 맨 위에 0xdb1010가 있기 때문에 오류가 날 것이다.
+만약 0xdb1010 (첫 번째에 할당했던 메모리) 를 한 번 더 해제하면, 해제 목록의 맨 위에 0xdb1010가 있기 때문에 오류가 날 것입니다.
 
 So, instead, we'll free 0xdb1030.
-그 대신에, 우리는 0xdb1030(두 번째에 할당했던 메모리) 를 해제한다.
+그 대신에, 0xdb1030(두 번째에 할당했던 메모리) 를 해제합니다.
 
 Now, we can free 0xdb1010 again, since it's not the head of the free list.
-이제, 우리는 0xdb1010 (첫 번째로 할당했던 메모리) 가 해제 목록의 맨 앞에 있지 않기에 한 번 더 해제할 수 있다.
+이제, 0xdb1010 (첫 번째로 할당했던 메모리) 가 해제 목록의 맨 앞에 있지 않기에 한 번 더 해제할 수 있습니다.
 
 Now the free list has [ 0xdb1010, 0xdb1030, 0xdb1010 ]. We'll now carry out our attack by modifying data at 0xdb1010.
-이제 해제 목록에는 [ 0xdb1010, 0xdb1030, 0xdb1010 ] 가 들어있다.
-이제 데이터가 0xdb1010로 수정되도록 공격을 수행할 것이다.
+이제 해제 목록에는 [ 0xdb1010, 0xdb1030, 0xdb1010 ] 가 들어있습니다.
+이제 데이터가 0xdb1010로 수정되도록 공격을 수행할 것입니다.
 
 1st malloc(8): 0xdb1010
 2nd malloc(8): 0xdb1030
 
 Now the free list has [ 0xdb1010 ].
-이제 해제 목록에는 [ 0xdb1010 ] 가 들어있다.
+이제 해제 목록에는 [ 0xdb1010 ] 가 들어있습니다.
 
 Now, we have access to 0xdb1010 while it remains at the head of the free list.
-이제 0xdb1010 를 해제 목록의 맨 앞에 남아있을 때까지 접근(access)한다.
+이제 0xdb1010 를 해제 목록의 맨 앞에 남아있을 때까지 접근(access)합니다.
 
 so now we are writing a fake free size (in this case, 0x20) to the stack,
-그래서 우리는 스택에 가짜 해제 공간의 크기(이 상황에서는 0x20)를 저장해둔다.
+그래서 스택에 가짜 해제 공간의 크기(이 상황에서는 0x20)를 저장해둡니다.
 
 so that malloc will think there is a free chunk there and agree to return a pointer to it.
-그래서 malloc 는 그곳에 해제되어있던 청크가 있다고 생각하고, 이곳의 포인터를 반환할 것이다.
+그래서 malloc 는 그곳에 해제되어있던 청크가 있다고 생각하고, 이곳의 포인터를 반환할 것입니다.
 
 Now, we overwrite the first 8 bytes of the data at 0xdb1010 to point right before the 0x20.
-이제, 0xdb1010 (첫 번째로 할당했던 메모리) 보다 0x20 앞의 메모리의 맨 앞 8바이트를 덮어쓴다.
+이제, 0xdb1010 (첫 번째로 할당했던 메모리) 보다 0x20 앞의 메모리의 맨 앞 8바이트를 덮어씁니다.
 
 3rd malloc(8): 0xdb1010, putting the stack address on the free list
-이 때 스택의 주소를 해제 목록에 넣는다.
+이 때 스택의 주소를 해제 목록에 넣습니다.
 
 4th malloc(8): 0x7fffddf70f88
 ```
 
 ## Applicable CTF Challenges
+(적용 가능한 CTF 문제)
 
-[Here (9447-search-engine)](https://github.com/sunghun7511/Writeup/tree/master/ctf/9447-CTF/2015/exploitation/search-engine), [And Here (0ctf 2017-babyheap)](https://github.com/sunghun7511/Writeup/tree/master/ctf/0ctf/2017/pwnable/babyheap)
+* 9447 ctf 2015 search-engine - [blog]() / [binary](https://github.com/sunghun7511/Writeup/tree/master/ctf/9447-CTF/2015/exploitation/search-engine)
+* 0ctf 2017-babyheap - [blog]() / [binary](https://github.com/sunghun7511/Writeup/tree/master/ctf/0ctf/2017/pwnable/babyheap)

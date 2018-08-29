@@ -64,36 +64,38 @@ Now the free list has [ 0xe99010, 0xe99030, 0xe99010 ]. If we malloc 3 times, we
 
 Tricking malloc into returning an already-allocated heap pointer by abusing the fastbin freelist.
 
-`fastbin` 해제 목록(freelist)을 어뷰징(정당하지 않게 사용)하여 `malloc`이 이미 할당되있는 힙 청크의 포인터를 반환하게 하는 트릭이다.
+`fastbin` 해제 목록(freelist)을 어뷰징(정당하지 않게 사용)하여 `malloc`이 이미 할당되있는 힙 청크의 포인터를 반환하게 하는 트릭입니다.
+
+(번역은 완벽하지 않으며, 추후 수정될 수 있습니다.)
 
 ## 출력 번역
 
 ```
 This file demonstrates a simple double-free attack with fastbins.
-이 파일은 fastbins 을 사용하여 간단한 double-free 공격을 시연한다.
+이 파일은 fastbins 을 사용하여 간단한 double-free 공격을 시연합니다.
 
 Allocating 3 buffers.
-3개의 버퍼를 할당한다.
+3개의 버퍼를 할당합니다.
 
 1st malloc(8): 0xe99010
 2nd malloc(8): 0xe99030
 3rd malloc(8): 0xe99050
 
 Freeing the first one...
-첫 번째 버퍼를 해제한다.
+첫 번째 버퍼를 해제합니다.
 
 If we free 0xe99010 again, things will crash because 0xe99010 is at the top of the free list.
-만약 우리가 0xe99010(첫 번째에 할당했던 메모리) 를 한 번 더 해제하면, 이것이 해제 목록의 최상위에 있기에 오류가 난다.
+만약 0xe99010(첫 번째에 할당했던 메모리) 를 한 번 더 해제하면, 이것이 해제 목록의 최상위에 있기에 오류가 납니다.
 
 So, instead, we'll free 0xe99030.
-그 대신에, 우리는 0xe99030(두 번째에 할당했던 메모리) 를 해제한다.
+그 대신에, 0xe99030(두 번째에 할당했던 메모리) 를 해제합니다.
 
 Now, we can free 0xe99010 again, since it's not the head of the free list.
-이제, 우리는 0xe99010(첫 번째로 할당했던 메모리) 가 해제 목록의 맨 앞에 있지 않기에 한 번 더 해제할 수 있다.
+이제, 0xe99010(첫 번째로 할당했던 메모리) 가 해제 목록의 맨 앞에 있지 않기에 한 번 더 해제할 수 있습니다.
 
 Now the free list has [ 0xe99010, 0xe99030, 0xe99010 ]. If we malloc 3 times, we'll get 0xe99010 twice!
-이제 해제 목록에는 [ 0xe99010, 0xe99030, 0xe99010 ] 가 들어있다.
-만약 우리가 메모리를 3 번 할당하면 우리는 0xe99010 를 두 번 얻을 것이다.
+이제 해제 목록에는 [ 0xe99010, 0xe99030, 0xe99010 ] 가 들어있습니다.
+이제, 메모리를 3 번 할당하면 0xe99010 를 두 번 얻을 수 있습니다.
 
 1st malloc(8): 0xe99010
 2nd malloc(8): 0xe99030
